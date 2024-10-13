@@ -1,0 +1,34 @@
+---
+title: "p8105_hw3_zc2822"
+author: "Zhengyong Chen"
+output: github_document
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+library(tidyverse)
+```
+
+## Problem 2
+
+Load, tidy, merge, and organize the data sets. 
+
+```{r}
+demo_df = 
+  read_csv("data/nhanes_covar.csv", na = c("NA", ".", ""), skip = 4) |> 
+  janitor::clean_names() |> 
+  filter(age >= 21, 
+         !is.na(sex), !is.na(age), !is.na(bmi), !is.na(education)) |> 
+  mutate(
+    sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female"), ordered = TRUE),
+    education = factor(education, levels = c(1, 2, 3), 
+                       labels = c("Less than HS", "HS equivalent", "More than HS"), 
+                       ordered = TRUE)
+  )
+
+accel_df = 
+  read_csv("data/nhanes_accel.csv", na = c("NA", ".", "")) |> 
+  janitor::clean_names()
+
+mims_df <- left_join(demo_df, accel_df, by = "seqn")
+```
+
