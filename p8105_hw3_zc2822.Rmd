@@ -99,7 +99,7 @@ For the more than high school group, both sexes show an flat trend of total acti
 
 **24-hour activity time courses**
 
-```{r}
+```{r, message = FALSE}
 mims_df_long = mims_df |> 
   pivot_longer(cols = starts_with("min"), 
                names_to = "minute", 
@@ -118,5 +118,62 @@ ggplot(mims_df_long, aes(x = minute, y = activity, color = sex)) +
 ```
 
 In all three education groups, activity starts low, increases in the middle of the day, and decreases toward the end of the day. The less than high school education group has the most obvious peak during the day. Male and female pattern within each education group are similar.
+
+## Problem 3
+
+**Import, clean, and tidy these data, and describe the resulting dataset.**
+
+```{r, message = FALSE}
+jan20_df = read_csv("data/citibike/Jan 2020 Citi.csv") |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = "2020",
+    month = "Jan"
+  )
+
+jan24_df = read_csv("data/citibike/Jan 2024 Citi.csv") |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = "2024",
+    month = "Jan"
+  )
+
+july20_df = read_csv("data/citibike/July 2020 Citi.csv") |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = "2020",
+    month = "July"
+  )
+
+july24_df = read_csv("data/citibike/July 2024 Citi.csv") |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = "2024",
+    month = "July"
+  )
+
+bike_df = bind_rows(jan20_df, jan24_df, july20_df, july24_df)
+```
+
+The resulting dataset `bike_df` combines the datesets in four months. It has `r ncol(bike_df)` variables: `r colnames(bike_df)`, and it has `r nrow(bike_df)` rows.
+
+**Table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members.**
+
+```{r}
+bike_df |> 
+  group_by(year, month, member_casual) |> 
+  summarise(count = n()) |> 
+  pivot_wider(
+    names_from = "member_casual",
+    values_from = "count"
+  ) |> 
+  knitr::kable()
+```
+
+In both 2020 and 2024, the number of all rides is lower in January compared to July. This might due to January is too cold to bike. From 2020 to 2024, the number of rides for both casual riders members has increased significantly. This means the citi bike system becomes more popular and has expanded. 
+
+
+
+
 
 
