@@ -11,7 +11,7 @@ library(ggplot2)
 
 ## Problem 2
 
-**Load, tidy, merge, and organize the data sets. **
+**Load, tidy, merge, and organize the data sets.**
 
 ```{r, message=FALSE}
 demo_df = 
@@ -152,7 +152,9 @@ july24_df = read_csv("data/citibike/July 2024 Citi.csv") |>
     month = "July"
   )
 
-bike_df = bind_rows(jan20_df, jan24_df, july20_df, july24_df)
+bike_df = bind_rows(jan20_df, jan24_df, july20_df, july24_df) |> 
+  relocate(year, month, .before = weekdays) |> 
+  mutate(weekdays = factor(weekdays, levels= c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")))
 ```
 
 The resulting dataset `bike_df` combines the datesets in four months. It has `r ncol(bike_df)` variables: `r colnames(bike_df)`, and it has `r nrow(bike_df)` rows.
@@ -171,6 +173,36 @@ bike_df |>
 ```
 
 In both 2020 and 2024, the number of all rides is lower in January compared to July. This might due to January is too cold to bike. From 2020 to 2024, the number of rides for both casual riders members has increased significantly. This means the citi bike system becomes more popular and has expanded. 
+
+**Table showing the 5 most popular starting stations for July 2024.**
+
+```{r}
+july24_df |> 
+  group_by(start_station_name) |> 
+  summarise(num_rides = n()) |> 
+  arrange(desc(num_rides)) |> 
+  slice(1:5) |> 
+  knitr::kable()
+```
+
+**Plot showing the effects of day of the week, month, and year on median ride duration.**
+
+```{r}
+bike_df |> 
+  group_by(year, month, weekdays) |> 
+  summarise(median_duration = median(duration, na.rm = TRUE)) |> 
+  ggplot(aes(x = weekdays, y = median_duration, fill = month)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ year) +
+  labs(title = "Median ride duration by day of the week, month, and year",
+       x = "Weekdays",
+       y = "Median duration") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+```
+
+In both 2020 and 2024, the median duration is higher in July compared to January, this might because warmer weather encourages longer rides. And in both years, the median duration tends to be higher on weekends compared to weekdays, this might because people have more time to ride on weekends. 
+
+The median duration in 2020 are generally higher than those in 2024. And the difference of median durarion between Jan and July are larger in 2020 than that in 2024.
 
 
 
