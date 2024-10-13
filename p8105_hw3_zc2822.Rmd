@@ -11,7 +11,7 @@ library(ggplot2)
 
 ## Problem 2
 
-Load, tidy, merge, and organize the data sets. 
+**Load, tidy, merge, and organize the data sets. **
 
 ```{r, message=FALSE}
 demo_df = 
@@ -33,7 +33,7 @@ accel_df =
 mims_df <- left_join(demo_df, accel_df, by = "seqn")
 ```
 
-Table for the number of men and women in each education category.
+**Table for the number of men and women in each education category.**
 
 ```{r, message=FALSE}
 demo_df |> 
@@ -46,7 +46,7 @@ demo_df |>
   knitr::kable()
 ```
 
-Visualization of the age distributions for men and women in each education category. 
+**Visualization of the age distributions for men and women in each education category. **
 
 ```{r}
 demo_df |> 
@@ -57,7 +57,7 @@ demo_df |>
   labs(title = "Age distributions for men and women in each education category")
 ```
 
-Comment:
+**Comment:**
 
 The younger age group (<40) of female tends to have a more than high school education, and that of male tends to have a high school equivalent and more than high school education.
 
@@ -69,7 +69,7 @@ For the more than high school education category, the age spread of male and fem
 
 
 
-Plot total activities against age. 
+**Plot total activities against age. **
 
 ```{r, message = FALSE}
 mims_df |> 
@@ -86,7 +86,7 @@ mims_df |>
        y = "Total Activity")
 ```
 
-Comment:
+**Comment:**
 
 Total activity tends to decrease with age in all education groups, but the patterns are different. Female generally have higher total activity compared to male in more than or equivalent to high school education groups.
 
@@ -97,5 +97,26 @@ For the high school equivalent group, female has two peaks of total activity, on
 For the more than high school group, both sexes show an flat trend of total activity until around age 50, then decrease sharply.
 
 
+**24-hour activity time courses**
+
+```{r}
+mims_df_long = mims_df |> 
+  pivot_longer(cols = starts_with("min"), 
+               names_to = "minute", 
+               names_prefix = "min", 
+               values_to = "activity") |> 
+  mutate(minute = as.numeric(minute))  
+
+ggplot(mims_df_long, aes(x = minute, y = activity, color = sex)) +
+  geom_point(alpha = .05, size = .1) + 
+  facet_wrap(~ education) +  
+  scale_color_manual(values = c("Male" = "blue", "Female" = "red")) +  
+  geom_smooth(se = FALSE) +
+  labs(title = "24 hour activity time courses by education and sex",
+       x = "Minute",
+       y = "Activity") 
+```
+
+In all three education groups, activity starts low, increases in the middle of the day, and decreases toward the end of the day. The less than high school education group has the most obvious peak during the day. Male and female pattern within each education group are similar.
 
 
