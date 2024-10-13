@@ -51,8 +51,9 @@ Visualization of the age distributions for men and women in each education categ
 ```{r}
 demo_df |> 
   group_by(education, sex) |> 
-  ggplot(aes(x = education, y = age, color = sex)) +
-  geom_boxplot() +
+  ggplot(aes(x = education, y = age, fill = sex)) +
+  geom_boxplot(alpha = .5) +
+  scale_fill_manual(values = c("Male" = "blue", "Female" = "red")) +
   labs(title = "Age distributions for men and women in each education category")
 ```
 
@@ -65,5 +66,36 @@ For the less than high school education category, the age spread of male and fem
 For the high school equivalent education category, from both the age spread and the median, male tends to be younger than female.
 
 For the more than high school education category, the age spread of male and female does not differ much, but the female group has a smaller median.
+
+
+
+Plot total activities against age. 
+
+```{r, message = FALSE}
+mims_df |> 
+  rowwise() |> 
+  mutate(total_activity = sum(c_across(starts_with("min")), na.rm = TRUE)) |> 
+  ungroup() |> 
+  ggplot(aes(x = age, y = total_activity, col = sex)) +
+  geom_point(alpha = .5) +
+  scale_color_manual(values = c("Male" = "blue", "Female" = "red")) +
+  facet_wrap(~ education) + 
+  geom_smooth(se = FALSE) + 
+  labs(title = "Total activity vs age by education level and sex",
+       x = "Age", 
+       y = "Total Activity")
+```
+
+Comment:
+
+Total activity tends to decrease with age in all education groups, but the patterns are different. Female generally have higher total activity compared to male in more than or equivalent to high school education groups.
+
+For the less than high school group, female shows an overall decreasing trend of total activity as age increases, while male first decreases in total activity, then rises to a peak at around age 60, and then decreases sharply.
+
+For the high school equivalent group, female has two peaks of total activity, one at age 40, and the other at age 70. Male's total activity increases before age 40, and then decreases.
+
+For the more than high school group, both sexes show an flat trend of total activity until around age 50, then decrease sharply.
+
+
 
 
