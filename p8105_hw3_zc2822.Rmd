@@ -7,7 +7,82 @@ output: github_document
 ```{r setup, echo=FALSE, message=FALSE}
 library(tidyverse)
 library(ggplot2)
+library(p8105.datasets)
+library(ggridges)
+library(patchwork)
 ```
+
+## Problem 1
+
+**Read the data.**
+
+```{r}
+data("ny_noaa")
+```
+
+This dataset contains `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns. The variables are: `r colnames(ny_noaa)`. There are many missing value `NA` in different variables.
+
+**Data cleaning.**
+
+```{r}
+ny_noaa = 
+  ny_noaa |> 
+  separate(date, into = c("year", "month", "day"), convert = TRUE) |> 
+  mutate(
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin))
+```
+
+```{r}
+ny_noaa |> 
+  count(snow)  |> 
+  arrange(desc(n)) |> 
+  head(10) |> 
+  knitr::kable()
+```
+
+For snowfall, 0 is the most common value. This is because it does not snow most of the days in NY. The second most commonly observed value is `NA`, which means there are many missing values.
+
+**Two-panel plot showing the average max temperature in January and in July in each station across years.**
+
+```{r}
+ny_noaa %>% 
+  group_by(id, year, month) |> 
+  filter(month %in% c(1, 7)) |> 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE, color = id)) |> 
+  ggplot(aes(x = year, y = mean_tmax, group = id)) + 
+  geom_point(size = .1) + 
+  facet_grid(~ month) +
+  labs(title = "Mean monthly temperature in each station across years in January and July",
+       x = "Year",
+       y = "Average max temperature")
+```
+
+The mean max temperature in January is much lower than the mean temperature in July. All stations tend to follow similar trends of temperature across the year. There are a few outliers. There is one extreme low temperature in July 1988.
+
+**Plot: tmax vs tmin and the distribution of snowfall values.**
+
+```{r}
+hex = 
+  ny_noaa |>  
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_hex() +
+  labs(title = "tmax vs tmin")
+
+
+ridge = 
+  ny_noaa |> 
+  filter(snow < 100, snow > 0)  |> 
+  ggplot(aes(x = snow, y = as.factor(year))) + 
+  geom_density_ridges() +
+  labs(y = "Year",
+       title = "Distribution of snowfall values")
+
+hex + ridge
+```
+
+In the hex plot, most of the data cluster near the center of the distribution. In the ridge plot, the snowfall within a given year has mutiple peaks. Most are between 0 and 30 mm of snow in a year. But there is also other groups arround 50 and nearly 80.
+
 
 ## Problem 2
 
